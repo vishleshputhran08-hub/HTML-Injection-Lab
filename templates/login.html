@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Login - HTML Injection Lab{% endblock %}
+{% block content %}
+<h2>Login</h2>
+
+{% if error %}
+<div class="alert">{{ error }}</div>
+{% endif %}
+
+<form class="lab-form" action="{{ url_for('login') }}" method="POST">
+  <p>
+    <label for="username">Username</label>
+    <input type="text" id="username" name="username" value="{{ username }}" autocomplete="username">
+  </p>
+  <p>
+    <label for="password">Password</label>
+    <input type="password" id="password" name="password" autocomplete="current-password">
+  </p>
+  <p>
+    <button type="submit" class="button">Login</button>
+  </p>
+</form>
+
+<p class="note">Default laboratory credentials: <strong>bee</strong> / <strong>bug</strong></p>
+<p class="muted">The login form uses a standard HTTP POST request and can be intercepted in Burp Suite.</p>
+{% endblock %}

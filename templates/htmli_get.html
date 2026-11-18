@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}HTML Injection (Reflected) - GET{% endblock %}
+{% block content %}
+<h2>HTML Injection (Reflected) - GET</h2>
+<p class="breadcrumb"><a href="{{ url_for('portal') }}">Portal</a> &rsaquo; HTML Injection (Reflected) - GET</p>
+
+<form class="lab-form" action="{{ url_for('htmli_get') }}" method="GET">
+  <p>
+    <label for="firstname">First name</label>
+    <input type="text" id="firstname" name="firstname" value="{{ firstname }}">
+  </p>
+  <p>
+    <label for="lastname">Last name</label>
+    <input type="text" id="lastname" name="lastname" value="{{ lastname }}">
+  </p>
+  <p>
+    <button type="submit" name="form" value="submit" class="button">Go</button>
+  </p>
+</form>
+
+{% if submitted %}
+<div class="result">
+  <h3>Result</h3>
+  <p>Welcome {{ firstname|safe }} {{ lastname|safe }}</p>
+</div>
+{% endif %}
+
+<p class="muted">This page sends a standard GET request. Intercept the request in Burp Suite to modify the
+<code>firstname</code> and <code>lastname</code> parameters.</p>
+{% endblock %}

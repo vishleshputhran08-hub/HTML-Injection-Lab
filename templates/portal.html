@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Portal - HTML Injection Lab{% endblock %}
+{% block content %}
+<h2>Choose a Laboratory</h2>
+<p>Select an HTML injection exercise to begin testing.</p>
+
+<table class="lab-table">
+  <thead>
+    <tr>
+      <th>Vulnerability</th>
+      <th>Method</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <strong>HTML Injection (Reflected)</strong>
+        <span class="row-note">Values are reflected from the query string.</span>
+      </td>
+      <td>GET</td>
+      <td><a class="button" href="{{ url_for('htmli_get') }}">Hack</a></td>
+    </tr>
+    <tr>
+      <td>
+        <strong>HTML Injection (Reflected)</strong>
+        <span class="row-note">Values are reflected from the POST body.</span>
+      </td>
+      <td>POST</td>
+      <td><a class="button" href="{{ url_for('htmli_post') }}">Hack</a></td>
+    </tr>
+  </tbody>
+</table>
+{% endblock %}
