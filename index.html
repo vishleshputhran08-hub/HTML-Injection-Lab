@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTML Injection Lab</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family: Arial, sans-serif; background: #ffffff; color: #000000; margin: 0; padding: 0; }
+.container { max-width: 800px; margin: 0 auto; padding: 20px; }
+h1, h2, h3 { color: #0066cc; }
+a { color: #0066cc; text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.screen { display: none; }
+.screen.active { display: block; }
+
+.btn { background: #0066cc; color: #fff; border: none; padding: 8px 16px; cursor: pointer; font-size: 14px; }
+.btn:hover { background: #004c99; }
+.btn.secondary { background: #e0e0e0; color: #000; }
+.btn.secondary:hover { background: #d0d0d0; }
+
+.form-group { margin-bottom: 15px; }
+label { display: block; margin-bottom: 5px; font-weight: bold; }
+input[type="text"], input[type="password"] { width: 100%; padding: 8px; border: 1px solid #ccc; font-size: 14px; }
+
+.card { border: 1px solid #ccc; padding: 15px; margin-bottom: 15px; background: #fafafa; }
+
+.nav { margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #ccc; }
+.nav a { margin-right: 15px; font-weight: bold; }
+
+.warning { color: #8a2c2c; background: #fdeaea; border: 1px solid #8a2c2c; padding: 10px; margin: 15px 0; }
+.info { color: #004085; background: #e7f1ff; border: 1px solid #004085; padding: 10px; margin: 15px 0; }
+
+#reflectedOutput { margin-top: 20px; padding: 15px; border: 1px dashed #0066cc; background: #f8f8f8; min-height: 60px; }
+#reflectedOutput b { color: #0066cc; }
+
+#postResult { margin-top: 20px; padding: 15px; border: 1px solid #ccc; background: #f8f8f8; min-height: 60px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+<nav class="nav">
+<a href="#" onclick="showScreen('login')" class="btn secondary">Home</a>
+</nav>
+
+<!-- Login Screen -->
+<div id="screen-login" class="screen active">
+<h1>HTML Injection Lab</h1>
+<p>Please log in to access the vulnerability lab.</p>
+<div class="card">
+<form id="loginForm" onsubmit="return handleLogin(event)">
+<div class="form-group">
+<label for="loginUser">Username</label>
+<input type="text" id="loginUser" required>
+</div>
+<div class="form-group">
+<label for="loginPass">Password</label>
+<input type="password" id="loginPass" required>
+</div>
+<button type="submit" class="btn">Login</button>
+</form>
+<div style="margin-top:10px; color:#666; font-size:12px;">
+Default credentials: Username <b>bee</b> / Password <b>bug</b>
+</div>
+</div>
+</div>
+
+<!-- Vulnerability Selection Screen -->
+<div id="screen-vuln" class="screen">
+<h1>HTML Injection Lab</h1>
+<p>Select a vulnerability to experiment with:</p>
+
+<div class="card">
+<h2>HTML Injection (Reflected) - GET</h2>
+<p>A reflected HTML injection vulnerability occurs when user input is reflected back in the page response without proper sanitization.</p>
+<button class="btn" onclick="showScreen('get')">Hack</button>
+</div>
+
+<div class="card">
+<h2>HTML Injection (Reflected) - POST</h2>
+<p>A reflected HTML injection vulnerability where input is submitted via POST body. Requires a backend server to process the POST request.</p>
+<button class="btn" onclick="showScreen('post')">Hack</button>
+</div>
+</div>
+
+<!-- GET Experiment Screen -->
+<div id="screen-get" class="screen">
+<h1>HTML Injection (Reflected) - GET</h1>
+<p><a href="#" onclick="showScreen('vuln')">&larr; Back to vulnerabilities</a></p>
+
+<div class="warning"><b>Educational Warning:</b> This page intentionally reflects user input as raw HTML. This is unsafe and demonstrates a real vulnerability. Do not use this pattern in production.</div>
+
+<form id="getForm" method="GET">
+<div class="form-group">
+<label for="getFirstname">First Name</label>
+<input type="text" id="getFirstname" name="firstname" placeholder="e.g. &lt;b&gt;Test&lt;/b&gt;">
+</div>
+<div class="form-group">
+<label for="getLastname">Last Name</label>
+<input type="text" id="getLastname" name="lastname" placeholder="e.g. Jogi">
+</div>
+<button type="submit" class="btn" name="form" value="submit">Go</button>
+</form>
+
+<div id="reflectedOutput"></div>
+</div>
+
+<!-- POST Experiment Screen -->
+<div id="screen-post" class="screen">
+<h1>HTML Injection (Reflected) - POST</h1>
+<p><a href="#" onclick="showScreen('vuln')">&larr; Back to vulnerabilities</a></p>
+
+<div class="info"><b>Note (Static Simulation):</b> A real POST request sends data in the request body to a server endpoint. Because this project is 100% static and contains only <code>index.html</code> with no backend, there is no real server to receive POST data. This experiment is simulated locally in the browser for educational purposes.</div>
+
+<form id="postForm" method="POST" onsubmit="return handlePostSim(event)">
+<div class="form-group">
+<label for="postFirstname">First Name</label>
+<input type="text" id="postFirstname" name="firstname" placeholder="e.g. &lt;b&gt;Test&lt;/b&gt;">
+</div>
+<div class="form-group">
+<label for="postLastname">Last Name</label>
+<input type="text" id="postLastname" name="lastname" placeholder="e.g. Jogi">
+</div>
+<button type="submit" class="btn">Go</button>
+</form>
+
+<div id="postResult"></div>
+
+<div class="info">
+<h3>Burp Suite - GET vs POST</h3>
+<p><b>GET:</b> In a real GET request, parameters are contained in the URL (e.g. <code>?firstname=Test&amp;lastname=Jogi</code>). Because the data is visible in the URL, it can be viewed and modified using tools like Burp Suite before the request reaches the server.</p>
+<p><b>POST:</b> A real POST request sends data in the request body and requires a server endpoint to receive and process it. Since this project is intentionally static and contains only <code>index.html</code>, there is no server-side POST endpoint, so the POST experiment is simulated locally in the browser.</p>
+</div>
+</div>
+
+</div>
+
+<script>
+function showScreen(id) {
+var screens = document.querySelectorAll('.screen');
+screens.forEach(function(s) { s.classList.remove('active'); });
+document.getElementById('screen-' + id).classList.add('active');
+window.scrollTo(0, 0);
+}
+
+function handleLogin(e) {
+e.preventDefault();
+var u = document.getElementById('loginUser').value;
+var p = document.getElementById('loginPass').value;
+if (u === 'bee' && p === 'bug') {
+showScreen('vuln');
+} else {
+alert('Invalid credentials. Try Username: bee / Password: bug');
+}
+return false;
+}
+
+function handleGetSubmit(e) {
+e.preventDefault();
+var firstname = document.getElementById('getFirstname').value;
+var lastname = document.getElementById('getLastname').value;
+var url = window.location.pathname + '?firstname=' + encodeURIComponent(firstname) + '&lastname=' + encodeURIComponent(lastname) + '&form=submit';
+window.history.pushState({}, '', url);
+renderReflected(firstname, lastname);
+return false;
+}
+
+function renderReflected(firstname, lastname) {
+var out = document.getElementById('reflectedOutput');
+out.innerHTML = '<b>Reflected output (unsafe HTML):</b><br>First Name: ' + firstname + '<br>Last Name: ' + lastname;
+}
+
+function parseGetParams() {
+var params = {};
+var query = window.location.search.substring(1);
+var vars = query.split('&');
+for (var i = 0; i < vars.length; i++) {
+var pair = vars[i].split('=');
+if (pair.length === 2) {
+params[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
+}
+}
+return params;
+}
+
+function handlePostSim(e) {
+e.preventDefault();
+var firstname = document.getElementById('postFirstname').value;
+var lastname = document.getElementById('postLastname').value;
+var res = document.getElementById('postResult');
+res.innerHTML = '<b>Simulated POST reflection (local, no server):</b><br>First Name: ' + firstname + '<br>Last Name: ' + lastname;
+return false;
+}
+
+// Initialize based on current URL
+var params = parseGetParams();
+if (params.firstname !== undefined || params.lastname !== undefined) {
+renderReflected(params.firstname || '', params.lastname || '');
+}
+</script>
+
+</body>
+</html>
